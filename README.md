@@ -214,26 +214,26 @@ But sometimes you want to have a "special case" channel flow to occur. In flowma
 
 ```clojure
 {:description "simple example of conditional pathways"
-               :components {:int1 10
-                            :int2 21
-                            :adder {:fn + ;; notice that adder has no "traditional" connections, just a bool set of condis
-                                    :inputs [:in1 :in2]
-                                    :cond {:odd? #(odd? %) ;; 2 bool conditional dyn outs with no "real" output flow below
-                                           :even? #(even? %)}}
-                            :odd? (fn [x] (when (odd? x) "odd!"))
-                            :even? (fn [x] (when (even? x) "even!"))
-                            :display-val {:fn (fn [x] x)
-                                          :view (fn [x] [:re-com/box
-                                                         :align :center :justify :center
-                                                         :style {:font-size "105px"
-                                                                 :color "orange"
-                                                                 :font-family "Sansita Swashed"}
-                                                         :child (str x)])}}
-               :connections [[:int1 :adder/in1]
-                             [:int2 :adder/in2] ;; notice that nothing connects TO :odd?, :even? here since it's logic is handled above
-                             [:odd? :display-val] ;; but we DO need to handle FROM both possibilities
-                             [:even? :display-val]
-                             [:display-val :done]]}
+ :components {:int1 10
+              :int2 21
+              :adder {:fn + ;; notice that adder has no "traditional" connections, just a bool set of condis
+                      :inputs [:in1 :in2]
+                      :cond {:odd? #(odd? %) ;; 2 bool conditional dyn outs with no "real" output flow below
+                             :even? #(even? %)}}
+              :odd? (fn [x] (when (odd? x) "odd!"))
+              :even? (fn [x] (when (even? x) "even!"))
+              :display-val {:fn (fn [x] x)
+                            :view (fn [x] [:re-com/box
+                                           :align :center :justify :center
+                                           :style {:font-size "105px"
+                                                   :color "orange"
+                                                   :font-family "Sansita Swashed"}
+                                           :child (str x)])}}
+ :connections [[:int1 :adder/in1]
+               [:int2 :adder/in2] ;; notice that nothing connects TO :odd?, :even? here since it's logic is handled above
+               [:odd? :display-val] ;; but we DO need to handle FROM both possibilities
+               [:even? :display-val]
+               [:display-val :done]]}
 ```
 
 Note: they can be used in conjunction with "regular pathways" (that always ship) or you can have a block with _only_ conditional pathways. A simple example would be odd or even. They both cannot be true at the same time, but one HAS to be true if we're receiving numbers, so the flow continues. However, what if we had 3 conditional pathways... odd? even? divisible-by-6? In this case sometimes we'd have 2 conditional channels shipping at times.
@@ -286,11 +286,11 @@ Each block can have a :view function defined which is run _after_ the main funct
 
 You can use a simple string and it'll be rendered "pretty".
 ```clojure
-                :extract {:fn (fn [_] ;; ignoring actual sent value here - it's a trigger / signal
-                                (let [db {:subprotocol "sqlite"
-                                          :subname "/home/ryanr/boston-crime-data.db"}]
-                                  (jdbc/query db ["SELECT o.*, substring(occurred_on_date, 0, 11) as ON_DATE FROM offenses o"])))
-                          :view (fn [x] (str "Extracted " (ut/nf (count x)) " rows"))}
+ :extract {:fn (fn [_] ;; ignoring actual sent value here - it's a trigger / signal
+                 (let [db {:subprotocol "sqlite"
+                           :subname "/home/ryanr/boston-crime-data.db"}]
+                   (jdbc/query db ["SELECT o.*, substring(occurred_on_date, 0, 11) as ON_DATE FROM offenses o"])))
+           :view (fn [x] (str "Extracted " (ut/nf (count x)) " rows"))}
 ```
 
 ![1rabbit web ui](https://app.rabbitremix.com/simple-view.png)
@@ -298,23 +298,23 @@ You can use a simple string and it'll be rendered "pretty".
 Or you can use hiccup and keywordized re-com components! Go nuts.
 
 ```clojure
-                :extract {:fn (fn [_] ;; ignoring actual sent value here for demo purposes (it's a trigger / signal)
-                                (let [db {:subprotocol "sqlite"
-                                          :subname "/home/ryanr/boston-crime-data.db"}]
-                                  (jdbc/query db ["SELECT o.*, substring(occurred_on_date, 0, 11) as ON_DATE FROM offenses o"])))
+ :extract {:fn (fn [_] ;; ignoring actual sent value here for demo purposes (it's a trigger / signal)
+                 (let [db {:subprotocol "sqlite"
+                           :subname "/home/ryanr/boston-crime-data.db"}]
+                   (jdbc/query db ["SELECT o.*, substring(occurred_on_date, 0, 11) as ON_DATE FROM offenses o"])))
                           ;:view (fn [x] (str "Extracted " (ut/nf (count x)) " rows"))
-                          :view (fn [x] [:re-com/v-box
-                                         :size "auto"
-                                         :align :center :justify :center
-                                         :style {:border "3px dotted yellow"
-                                                 :font-size "33px"
-                                                 :color "yellow"
-                                                 :font-family "Merriweather"
-                                                 :background-color "maroon"}
-                                         :children [[:re-com/box :size "auto"
-                                                     :child "Extracted:"]
-                                                    [:re-com/box :size "auto"
-                                                     :child (str (ut/nf (count x)) " rows")]]])}
+           :view (fn [x] [:re-com/v-box
+                          :size "auto"
+                          :align :center :justify :center
+                          :style {:border "3px dotted yellow"
+                                  :font-size "33px"
+                                  :color "yellow"
+                                  :font-family "Merriweather"
+                                  :background-color "maroon"}
+                          :children [[:re-com/box :size "auto"
+                                      :child "Extracted:"]
+                                     [:re-com/box :size "auto"
+                                      :child (str (ut/nf (count x)) " rows")]]])}
 ```
 
 ![1rabbit web ui](https://app.rabbitremix.com/simple-view2.png)
@@ -322,44 +322,44 @@ Or you can use hiccup and keywordized re-com components! Go nuts.
 ...or... 👀
 
 ```clojure
-                               :conjer {:fn (fn [x]
-                                              (defonce vv (atom [])) ;; block has "local state" for each value it sees
-                                              (do (swap! vv conj x) @vv))
-                                        :view (fn [x]                ;; lets draw a bar as the data comes in row by row
-                                                [:vega-lite {:data {:values (map-indexed (fn [index value]
-                                                                                           {:index index
-                                                                                            :value value}) x)}
-                                                             :mark {:type "bar"
-                                                                    :color "#60a9eb66"}
-                                                             :encoding {:x {:field "index" :type "ordinal"
-                                                                            :title "index of conj pass"
-                                                                            :axis {:labelColor "#ffffff77"
-                                                                                   :ticks false
-                                                                                   :titleColor "#ffffff"
-                                                                                   :gridColor "#ffffff11"
-                                                                                   :labelFont "Poppins" 
-                                                                                   :titleFont "Poppins"
-                                                                                   :domainColor "#ffffff11"}}
-                                                                        :y {:field "value" :type "quantitative"
-                                                                            :title "random additive values"
-                                                                            :axis {:labelColor "#ffffff77"
-                                                                                   :titleColor "#ffffff"
-                                                                                   :ticks false
+ :conjer {:fn (fn [x]
+                (defonce vv (atom [])) ;; block has "local state" for each value it sees
+                (do (swap! vv conj x) @vv))
+          :view (fn [x]                ;; lets draw a bar as the data comes in row by row
+                  [:vega-lite {:data {:values (map-indexed (fn [index value]
+                                                             {:index index
+                                                              :value value}) x)}
+                               :mark {:type "bar"
+                                      :color "#60a9eb66"}
+                               :encoding {:x {:field "index" :type "ordinal"
+                                              :title "index of conj pass"
+                                              :axis {:labelColor "#ffffff77"
+                                                     :ticks false
+                                                     :titleColor "#ffffff"
+                                                     :gridColor "#ffffff11"
+                                                     :labelFont "Poppins"
+                                                     :titleFont "Poppins"
+                                                     :domainColor "#ffffff11"}}
+                                          :y {:field "value" :type "quantitative"
+                                              :title "random additive values"
+                                              :axis {:labelColor "#ffffff77"
+                                                     :titleColor "#ffffff"
+                                                     :ticks false
                                                                                     ;:gridColor "#00000000"
-                                                                                   :gridColor "#ffffff11"
-                                                                                   :labelFont "Poppins" 
-                                                                                   :titleFont "Poppins" 
-                                                                                   :labelFontSize 9 
-                                                                                   :labelLimit 180
-                                                                                   ;;:labelFontStyle {:color "blue"}
-                                                                                   :domainColor "#ffffff11"}}}
-                                                             :padding {:top 15 :left 15}
-                                                             :width "container"
-                                                             :height :height-int
-                                                             :background "transparent"
-                                                             :config {:style {"guide-label" {:fill "#ffffff77"}
-                                                                              "guide-title" {:fill "#ffffff77"}}
-                                                                      :view {:stroke "#00000000"}}} {:actions false}])}
+                                                     :gridColor "#ffffff11"
+                                                     :labelFont "Poppins"
+                                                     :titleFont "Poppins"
+                                                     :labelFontSize 9
+                                                     :labelLimit 180
+                                                     ;;:labelFontStyle {:color "blue"}
+                                                     :domainColor "#ffffff11"}}}
+                               :padding {:top 15 :left 15}
+                               :width "container"
+                               :height :height-int
+                               :background "transparent"
+                               :config {:style {"guide-label" {:fill "#ffffff77"}
+                                                "guide-title" {:fill "#ffffff77"}}
+                                        :view {:stroke "#00000000"}}} {:actions false}])}
 ```
 
 ![1rabbit web ui](https://app.rabbitremix.com/bars.png)
@@ -593,8 +593,8 @@ curl -X POST -s -H "Content-Type: application/edn" -H "Accept: application/edn" 
 Again, fairly straightforward - we send the value and then specify which channel to listen on to snatch a return value from.
 ```clojure
 {:value "when is the next full moon?"  ;; literal value you want to push
-:channel [:prompt :ask-buffy/prompt]   ;; target channel
-:return [:ask-buffy :just-answer]}     ;; what "eventual" value from channel to return?
+ :channel [:prompt :ask-buffy/prompt]   ;; target channel
+ :return [:ask-buffy :just-answer]}     ;; what "eventual" value from channel to return?
 ```
 You might have noticed that Rabbit provides cut-and-paste snippets for all channels when you expand a channel in the left-hand panel - a CURL example REST command is included.
 
